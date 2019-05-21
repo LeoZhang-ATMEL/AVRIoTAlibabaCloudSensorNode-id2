@@ -104,7 +104,9 @@ irot_result_t id2_client_get_version(uint32_t* pversion)
 // TODO
 irot_result_t id2_client_get_id(uint8_t* id, uint32_t* len)
 {
-	// Return, ID2 String
+	// Return, ID2 read from ATECC608
+	// Test Data: 2122232425262728292A2B2C
+	memcpy()
 	return IROT_SUCCESS;
 }
 
@@ -112,44 +114,119 @@ irot_result_t id2_client_get_id(uint8_t* id, uint32_t* len)
 static irot_result_t id2_hash(uint8_t* sign_in, uint32_t sign_in_len, uint8_t* hash_buf, uint32_t* hash_len)
 {
 	// Return hash result
-	// Example£º
-	// Sign_in = POST&%2F&AccessKeyId%3DLTAIXQlg58OsZV6X%26Action%3DVerify%26ApiVersion%3D1.1.2%26AuthCode%3D0~0~6C15FE4F5C681040~F864CFED7EB2F58C60D2F960FA24407D~0V6nSG7yh7goaIIZyCHMiz4mvDTh2GH0dPbFKYhbaCY%253D%26Extra%3Ddigest1234%26Format%3DXML%26Id2%3D00FFFF00FFFFFF073EC5AC00%26ProductKey%3Dr5oWHGVkfIw%26RegionId%3Dcn-shanghai%26SignatureMethod%3DHMAC-SHA1%26SignatureNonce%3D579f7d09-b47b-443f-b0ab-1f80d2795fa0%26SignatureVersion%3D1.0%26Timestamp%3D2019-05-20T01%253A55%253A50Z%26Version%3D2017-07-07
-	// Password (should be store in ATECC608 slot) = A7VpZJDQYmzAfa9YpbcagCjL46bNFL&
-	// hash_buf out = TWE79uUGbBU2ZLExfI3FCKV0XnU=
-	// Can be verified at https://1024tools.com/hmac
+	// Example:
+	// Sign_in = 2122232425262728292A2B2CABABABABABABABAB55B83408399FA660F05C82E4F25333DC
+	// sign_in_len = 0x48
+	// hash_buf out = 920EAACDADE8AF10B7154173C2F92E697B2B7C0C6A4A923E6097A823D3B0D9CD
+	// Can be verified at https://www.browserling.com/tools/all-hashes
 	return IROT_SUCCESS;
 }
 
-// TODO: Get Auth code by challenge
+// TODO: Get auth_code by Challenge
 irot_result_t id2_client_get_challenge_auth_code(const char* server_random, const uint8_t* extra, uint32_t extra_len, uint8_t* auth_code, uint32_t* auth_code_len)
 {
+	// Test Data 1:
+	// server_random = "55B83408399FA660F05C82E4F25333DC"
+	// extra = NULL
+	// extra_len = 0
+	// authen_code (output) = 0~2~ABABABABABABABAB~55B83408399FA660F05C82E4F25333DC~4sx4q/vZtJeBciBhpfzBwLaw7kXg4s2mmZxSoehsKtyXnA1nt3r97vPi1Bnh6fF1
+	// authen_code (output) = 118
+	
+	// Test Data 2
+	// server_random = "55B83408399FA660F05C82E4F25333DC"
+	// extra = "abcd1234"
+	// extra_len = 8
+	// authen_code (output) = 0~2~ABABABABABABABAB~55B83408399FA660F05C82E4F25333DC~4sx4q/vZtJeBciBhpfzBwLaw7kXg4s2mmZxSoehsKtyXnA1nt3r97vPi1Bnh6fF1
+	// authen_code (output) = 118
+	
+	// Step 1:  Generate Signature input data: ID2 + Random + Challenge + extra
+	// Result: 2122232425262728292A2B2CABABABABABABABAB55B83408399FA660F05C82E4F25333DC (Test 1)
+	// Result: 2122232425262728292A2B2CABABABABABABABAB55B83408399FA660F05C82E4F25333DCabcd1234 (Test 2)
+	
+	// Step 2: hash Signature by invoke id2_hash
+	// Result: 920EAACDADE8AF10B7154173C2F92E697B2B7C0C6A4A923E6097A823D3B0D9CD (Test 1)
+	// Result: 157888C53414377BAB744339E069D354039F6EA9C73B0C000714C4BAF4A8E3F8 (Test 2)
+	
+	// Step 3: Signature padding
+	// Result: 920EAACDADE8AF10B7154173C2F92E697B2B7C0C6A4A923E6097A823D3B0D9CD10101010101010101010101010101010 (Test 1)
+	// Result: 157888C53414377BAB744339E069D354039F6EA9C73B0C000714C4BAF4A8E3F810101010101010101010101010101010 (Test 2)
+	
+	// Step 4: AES Encrypt £¨Signature with padding) password 2122232425262728292A2B2C2D2E2F30, can be verify at http://www.cryptogrium.com/aes-encryption-online-ecb.html
+	// Result: E2CC78ABFBD9B49781722061A5FCC1C0B6B0EE45E0E2CDA6999C52A1E86C2ADC979C0D67B77AFDEEF3E2D419E1E9F175 (Test 1)
+	// Result: 3DD1244DEB59547B43DFEA3AE1AA6E127B20CF092A6C931F4C948C6874D26052979C0D67B77AFDEEF3E2D419E1E9F175 (Test 2)
+	
+	// Step 5: Base64 (Can be verified at https://conv.darkbyte.ru/)
+	// Result(ASCII): 4sx4q/vZtJeBciBhpfzBwLaw7kXg4s2mmZxSoehsKtyXnA1nt3r97vPi1Bnh6fF1 (Test 1)
+	// Result(ASCII): PdEkTetZVHtD3+o64apuEnsgzwkqbJMfTJSMaHTSYFKXnA1nt3r97vPi1Bnh6fF1 (Test 2)
 	return IROT_SUCCESS;
 }
 
-// TODO: Get Auth code by Timestamp
+// TODO: Get Auth Code by Timestamp
 irot_result_t id2_client_get_timestamp_auth_code(const char* timestamp, const uint8_t* extra, uint32_t extra_len, uint8_t* auth_code, uint32_t* auth_code_len)
 {
+	// Test Data 1:
+	// timestamp = "1512022279204"
+	// extra = NULL
+	// extra_len = 0
+	// authen_code (output) = 1~2~ABABABABABABABAB~1512022279204~8WFAQalYm+5++M4OKMtH2JOqsvOlS67rsX9ccSRpvWSXnA1nt3r97vPi1Bnh6fF1
+	// authen_code (output) = 99
+	
+	// Test Data 2
+	// server_random = "1512022279204"
+	// extra = "abcd1234"
+	// extra_len = 8
+	// authen_code (output) = 3~2~ABABABABABABABAB~1512022279204~3vxizdS0JVOKSqnsR8VsZd0xUnL7Uo2S4ojSgXnoxI6XnA1nt3r97vPi1Bnh6fF1
+	// authen_code (output) = 99
+	
+	// Step 1:  Generate Signature input data: ID2 + Challenge + Timestamp + extra
+	// Result: 2122232425262728292A2B2CABABABABABABABAB1512022279204 (Test 1)
+	// Result: 2122232425262728292A2B2CABABABABABABABAB1512022279204abcd1234 (Test 2)
+	
+	// Step 2: hash Signature by invoke id2_hash
+	// Result: 47349A522BB85BA0D20F10B964865DCF52CD13FF3C8B83C93E51D97A95042AFD (Test 1)
+	// Result: 1140825D382FDA6B00D859CD2A73486FB8DDEE69C591BACD490BF2703979C628 (Test 2)
+	
+	// Step 3: Signature padding
+	// Result: 47349A522BB85BA0D20F10B964865DCF52CD13FF3C8B83C93E51D97A95042AFD10101010101010101010101010101010 (Test 1)
+	// Result: 1140825D382FDA6B00D859CD2A73486FB8DDEE69C591BACD490BF2703979C62810101010101010101010101010101010 (Test 2)
+	
+	// Step 4: AES Encrypt £¨Signature with padding) password 2122232425262728292A2B2C2D2E2F30, can be verify at http://www.cryptogrium.com/aes-encryption-online-ecb.html
+	// Result: F1614041A9589BEE7EF8CE0E28CB47D893AAB2F3A54BAEEBB17F5C712469BD64979C0D67B77AFDEEF3E2D419E1E9F175 (Test 1)
+	// Result: DEFC62CDD4B425538A4AA9EC47C56C65DD315272FB528D92E288D28179E8C48E979C0D67B77AFDEEF3E2D419E1E9F175 (Test 2)
+	
+	// Step 5: Base64 (Can be verified at https://conv.darkbyte.ru/)
+	// Result(ASCII): 8WFAQalYm+5++M4OKMtH2JOqsvOlS67rsX9ccSRpvWSXnA1nt3r97vPi1Bnh6fF1 (Test 1)
+	// Result(ASCII): 3vxizdS0JVOKSqnsR8VsZd0xUnL7Uo2S4ojSgXnoxI6XnA1nt3r97vPi1Bnh6fF1 (Test 2)
 	return IROT_SUCCESS;
 }
 
 /**
- * TODO decrypt the input data with ID2 key.
+ * TODO decrypt the input data with ID2 password
  */
 irot_result_t id2_client_decrypt(const uint8_t* in, uint32_t in_len, uint8_t* out, uint32_t* out_len)
 {
+	// in = ECE18CE9B961AED75002A48EB9955E44
+	// out = 313233340C0C0C0C0C0C0C0C0C0C0C0C
 	return IROT_SUCCESS;
 }
 
 /**
- * TODO get the challenge form device.
+ * TODO get Challenge form Device
  */
 irot_result_t id2_client_get_device_challenge(uint8_t* device_random_buf, uint32_t* device_random_len)
 {
+	// (Test Data) return 0xABABABAB......
+	// use ATECC608 random value
+	uint8_t i;
+	for (i = 0; i < 16; ++i) {
+		device_random_buf[i] = (uint8_t)0xAB;
+	}
+	*device_random_len = 16;
 	return IROT_SUCCESS;
 }
 
 /**
- * TODO   verify the auth code from server.
+ * TODO  Send Auth code to Server for Verify
  */
 irot_result_t id2_client_verify_server(const uint8_t* server_auth_code, uint32_t server_auth_code_len, const uint8_t* device_random, uint32_t device_random_len, const uint8_t* server_extra, uint32_t server_extra_len)
 {
