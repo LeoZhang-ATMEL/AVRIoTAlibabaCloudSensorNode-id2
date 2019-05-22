@@ -136,7 +136,7 @@ irot_result_t id2_client_get_challenge_auth_code(const char* server_random, cons
 	// server_random = "55B83408399FA660F05C82E4F25333DC"
 	// extra = "abcd1234"
 	// extra_len = 8
-	// authen_code (output) = 0~2~ABABABABABABABAB~55B83408399FA660F05C82E4F25333DC~4sx4q/vZtJeBciBhpfzBwLaw7kXg4s2mmZxSoehsKtyXnA1nt3r97vPi1Bnh6fF1
+	// authen_code (output) = 2~2~ABABABABABABABAB~55B83408399FA660F05C82E4F25333DC~PdEkTetZVHtD3+o64apuEnsgzwkqbJMfTJSMaHTSYFKXnA1nt3r97vPi1Bnh6fF1
 	// authen_code (output) = 118
 	
 	// Step 1:  Generate Signature input data: ID2 + Random + Challenge + extra
@@ -218,7 +218,7 @@ irot_result_t id2_client_get_device_challenge(uint8_t* device_random_buf, uint32
 	// (Test Data) return 0xABABABAB......
 	// use ATECC608 random value
 	uint8_t i;
-	for (i = 0; i < 16; ++i) {
+	for (i = 0; i < 8; ++i) {
 		device_random_buf[i] = (uint8_t)0xAB;
 	}
 	*device_random_len = 16;
