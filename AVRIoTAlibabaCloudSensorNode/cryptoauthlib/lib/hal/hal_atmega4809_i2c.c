@@ -79,13 +79,13 @@ ATCA_STATUS hal_i2c_post_init(ATCAIface iface)
  * \param[in] txlength  number of bytes to send
  * \return ATCA_STATUS
  */
-
+#define I2C_ADDRESS_TEST 0x58
 ATCA_STATUS hal_i2c_send(ATCAIface iface, uint8_t *txdata, int txlength)
 {
 	txdata[0] = 0x03; // insert the Word Address Value, Command token
 	txlength++;       // account for word address value byte.
 
-	I2C_0_writeNBytes(0x58, txdata, txlength);
+	I2C_0_writeNBytes(I2C_ADDRESS_TEST, txdata, txlength);
 
 	return ATCA_SUCCESS;
 }
@@ -99,7 +99,7 @@ ATCA_STATUS hal_i2c_send(ATCAIface iface, uint8_t *txdata, int txlength)
 
 ATCA_STATUS hal_i2c_receive(ATCAIface iface, uint8_t *rxdata, uint16_t *rxlength)
 {
-	I2C_0_readNBytes(0x58, rxdata, *rxlength);
+	I2C_0_readNBytes(I2C_ADDRESS_TEST, rxdata, *rxlength);
 
 	return ATCA_SUCCESS;
 }
@@ -118,7 +118,7 @@ ATCA_STATUS hal_i2c_wake(ATCAIface iface)
 	uint8_t verif_data[4] = {0x04, 0x11, 0x33, 0x43};
 	uint8_t verification  = true;
 
-	I2C_0_readNBytes(0x58, &init_data, 4);
+	I2C_0_readNBytes(I2C_ADDRESS_TEST, &init_data, 4);
 
 	for (uint8_t i = 0; i < 4; i++) {
 		if (init_data[i] != verif_data[i])
@@ -139,7 +139,7 @@ ATCA_STATUS hal_i2c_idle(ATCAIface iface)
 {
 	uint8_t data = 0x02;
 
-	I2C_0_writeNBytes(0x58, &data, 1);
+	I2C_0_writeNBytes(I2C_ADDRESS_TEST, &data, 1);
 
 	return ATCA_SUCCESS;
 }
@@ -152,7 +152,7 @@ ATCA_STATUS hal_i2c_sleep(ATCAIface iface)
 {
 	uint8_t data = 0x01;
 
-	I2C_0_writeNBytes(0x58, &data, 1);
+	I2C_0_writeNBytes(I2C_ADDRESS_TEST, &data, 1);
 
 	return ATCA_SUCCESS;
 }
