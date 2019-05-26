@@ -334,7 +334,10 @@ irot_result_t id2_client_get_challenge_auth_code(const char* server_random, cons
 	// Result: E2CC78ABFBD9B49781722061A5FCC1C0B6B0EE45E0E2CDA6999C52A1E86C2ADC979C0D67B77AFDEEF3E2D419E1E9F175 (Test 1)
 	// Result: 3DD1244DEB59547B43DFEA3AE1AA6E127B20CF092A6C931F4C948C6874D26052979C0D67B77AFDEEF3E2D419E1E9F175 (Test 2)
 	
-	status = atcab_aes(ATCA_TEMPKEY_KEYID,0,result,sign_in);
+	extern char id2_aes_secret[33];
+	atcab_nonce(id2_aes_secret); /* Only TEMPKEY need to be write before AES command */
+
+	status = atcab_aes_encrypt(ATCA_TEMPKEY_KEYID,0,result,sign_in);
 	if (status != ATCA_SUCCESS) {
 		return status;
 	}

@@ -102,7 +102,7 @@ int main(void)
 		}
 	}
 #endif
-	//if (atcab_nonce_load(NONCE_MODE_TARGET_TEMPKEY, id2_aes_secret, 32) != ATCA_SUCCESS) {
+	/* Need to be write again before AES command, since the TempKey maybe modified by other cmd */
 	if (atcab_nonce(id2_aes_secret) != ATCA_SUCCESS) {
 		printf("id2_write_aes_secret failed\r\n");
 		while (1) {
@@ -110,7 +110,7 @@ int main(void)
 		}
 	}
 	
-	printf("server_random = 55B83408399FA660F05C82E4F25333DC \r\n");
+	printf("server_random = %s \r\n", server_random);
 	id2_client_get_challenge_auth_code(server_random,NULL,0,auth_code,&auth_code_len);
 	printf("auth_code: %s\r\n", auth_code);
 	
