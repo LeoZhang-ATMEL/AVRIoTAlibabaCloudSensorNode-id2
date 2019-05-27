@@ -288,6 +288,7 @@ irot_result_t id2_client_get_challenge_auth_code(const char* server_random, cons
 		//ID2 ID length error 
 	}
 	
+	/* ID2 + Random */
 	id2_client_get_device_challenge((uint8_t*)(sign_in + ID2_ID_LEN),&len1); //device challenge length is 16
 	memcpy((uint8_t*)(auth_code + 4), (uint8_t*)(sign_in + ID2_ID_LEN), len1);
 	authcodelen = 4+len1;
@@ -296,9 +297,11 @@ irot_result_t id2_client_get_challenge_auth_code(const char* server_random, cons
 	
 	templen = ID2_ID_LEN  + len1;
 	
+	/* ID2 + Random + Challenge */
 	templ = strlen(server_random);
 	memcpy((uint8_t*)(sign_in + templen), server_random, templ);
 	templen += templ;
+	
 	
 	memcpy((uint8_t*)(auth_code + authcodelen), server_random, templ);
 	authcodelen += templ;
@@ -311,6 +314,7 @@ irot_result_t id2_client_get_challenge_auth_code(const char* server_random, cons
 	auth_code[2] = '2';
 	auth_code[3] = '~';
 
+	/* ID2 + Random + Challenge + extra */
 	if((extra != NULL) && (extra_len > 0)){
 		memcpy((sign_in + templen),extra,extra_len);
 		templen += extra_len;
